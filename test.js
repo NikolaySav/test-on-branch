@@ -1,6 +1,7 @@
 console.log(process.env.DATABASE_URL);
-console.log("First 5 characters of the secret: " + process.env.DATABASE_URL.substring(0, 50));
+console.log("First 5 characters of the secret: " + process.env.DATABASE_URL.substring(0, 60));
 console.log("Length of the secret: " + process.env.DATABASE_URL.length);
+console.log(process.env.DATABASE_URL === "postgresql://neondb_owner:uokncgyia0P5@ep-small-bonus-w049d3yh.cloud.hydrogen.aws.neon.build/neondb?sslmode=require")
 
 // import assert from "node:assert";
 // import test from "node:test";
