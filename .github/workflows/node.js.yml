@@ -1,46 +1,45 @@
 name: Node.js CI
 
 on:
-  pull_request:
-    branches: [ "**" ]
+  push:
+    branches: [ "actions" ]  # Add more branches as needed
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: NEON_PREVIEW_ENV
+
+    # Prepare the environment variable with dynamic secret
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Extract branch name
+        id: extract_branch
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr '[:lower:]' '[:upper:]' | tr -d '-')" >> $GITHUB_ENV
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          DATABASE_URL: ${{ secrets[format('{0}_DATABASE_URL', env.BRANCH_NAME)] }}
+
+      - name: Build
+        run: npm run build --if-present
+        env:
+          DATABASE_URL: ${{ secrets[format('{0}_DATABASE_URL', env.BRANCH_NAME)] }}
+
+      - name: Run tests
+        run: npm test
+        env:
+          DATABASE_URL: ${{ secrets[format('{0}_DATABASE_URL', env.BRANCH_NAME)] }}
 
     strategy:
       matrix:
         node-version: [18.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-#      - run: npm ci
-#      - run: npm run build --if-present
-#      - run: npm test
-      - name: Set up branch specific DATABASE_URL
-        if: github.head_ref != 'main'
-        run: |
-          echo "Debug: GITHUB_HEAD_REF value: $GITHUB_HEAD_REF"
-          BRANCH_NAME="$GITHUB_HEAD_REF"
-          echo "Debug: Extracted BRANCH_NAME: $BRANCH_NAME"
-          BRANCH_NAME_UPPER=$(echo "$BRANCH_NAME" | tr '[:lower:]' '[:upper:]')
-          echo "Debug: BRANCH_NAME_UPPER: $BRANCH_NAME_UPPER"
-          SECRET_ENV_VAR_NAME="${BRANCH_NAME_UPPER}_DATABASE_URL"
-          echo "Debug: SECRET_ENV_VAR_NAME: $SECRET_ENV_VAR_NAME"
-          DATABASE_URL_VAR=$(printenv $SECRET_ENV_VAR_NAME)
-          echo "Debug: Retrieved value for $SECRET_ENV_VAR_NAME: $DATABASE_URL_VAR"
-          if [[ -z "$DATABASE_URL_VAR" ]]; then
-            echo "No database URL found for $BRANCH_NAME_UPPER"
-            exit 1
-          else
-            echo "Using Database URL: $DATABASE_URL_VAR"
-          fi
-        shell: bash
-        env:
-          GITHUB_HEAD_REF: ${{ github.head_ref }}
