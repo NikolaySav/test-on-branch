@@ -17,12 +17,17 @@ jobs:
         node-version: [ 20.x ]  # Updated Node version to 20.x
 
     steps:
+      - name: Check Node.js version
+        run: node -v
+
       - uses: actions/checkout@v3
+        with:
+          node-version: 20.x
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20.x
           cache: 'npm'
 
       - run: npm ci
