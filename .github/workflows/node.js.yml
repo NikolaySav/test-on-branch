@@ -17,10 +17,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Extract branch name
+      - name: Extract and echo branch name
         run: |
-          echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr '[:lower:]' '[:upper:]' | tr -d '-')" >> $GITHUB_ENV
+          BRANCH_NAME=$(echo "${GITHUB_REF#refs/heads/}" | tr '[:lower:]' '[:upper:]' | tr -d '-')
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
           echo "Normalized Branch Name: $BRANCH_NAME"
+        shell: bash
+
 
       - name: Debug secret key
         run: |
