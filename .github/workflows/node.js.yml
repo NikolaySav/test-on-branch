@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]  # Define Node.js versions here
+        node-version: [ 18.x ]  # Define Node.js versions here
 
     steps:
       - name: Checkout code
@@ -23,7 +23,9 @@ jobs:
           echo "Normalized Branch Name: $BRANCH_NAME"
 
       - name: Debug secret key
-        run: echo "Secret Key for DB URL: ${{ format('{0}_DATABASE_URL', env.BRANCH_NAME) }}"
+        run: |
+          SECRET_KEY="${{ env.BRANCH_NAME }}_DATABASE_URL"
+          echo "Secret Key for DB URL: $SECRET_KEY"
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
