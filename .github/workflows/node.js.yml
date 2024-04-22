@@ -26,8 +26,19 @@ jobs:
       - name: Set up branch specific DATABASE_URL
         if: github.ref != 'refs/heads/main'
         run: |
+          echo "Debug: Full GITHUB_REF value: $GITHUB_REF"
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          echo "Debug: Extracted BRANCH_NAME: $BRANCH_NAME"
           BRANCH_NAME_UPPER=$(echo "$BRANCH_NAME" | tr '[:lower:]' '[:upper:]')
+          echo "Debug: BRANCH_NAME_UPPER: $BRANCH_NAME_UPPER"
           SECRET_ENV_VAR_NAME="${BRANCH_NAME_UPPER}_DATABASE_URL"
+          echo "Debug: SECRET_ENV_VAR_NAME: $SECRET_ENV_VAR_NAME"
           DATABASE_URL_VAR=$(printenv $SECRET_ENV_VAR_NAME)
-          echo "Using Database URL: $DATABASE_URL_VAR"
+          echo "Debug: Retrieved value for $SECRET_ENV_VAR_NAME: $DATABASE_URL_VAR"
+          if [[ -z "$DATABASE_URL_VAR" ]]; then
+            echo "No database URL found for $BRANCH_NAME_UPPER"
+            exit 1
+          else
+            echo "Using Database URL: $DATABASE_URL_VAR"
+          fi
+        shell: bash
