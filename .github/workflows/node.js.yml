@@ -9,12 +9,15 @@ jobs:
     runs-on: ubuntu-latest
     environment: NEON_PREVIEW_ENV
 
+    strategy:
+      matrix:
+        node-version: [18.x]  # Define Node.js versions here
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Extract branch name
-        id: extract_branch
         run: |
           echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr '[:lower:]' '[:upper:]' | tr -d '-')" >> $GITHUB_ENV
           echo "Normalized Branch Name: $BRANCH_NAME"
@@ -48,7 +51,3 @@ jobs:
           echo "Using Node Version: ${{ matrix.node-version }}"
           echo "DATABASE_URL: $DATABASE_URL"  # Will be masked if it's a secret
 
-    strategy:
-      matrix:
-        node-version: [18.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
