@@ -41,19 +41,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
         env:
-          DATABASE_URL: ${{ secrets[env.BRANCH_NAME_DATABASE_URL] }}
+          DATABASE_URL: ${{ secrets[env.SECRET_KEY] }}
 
       - name: Build
         run: |
-          echo "SECRET_KEY: $SECRET_KEY"
           npm run build --if-present
         env:
           DATABASE_URL: ${{ secrets[env.SECRET_KEY] }}
 
       - name: Run tests
         run: |
+          echo "SECRET_KEY: $SECRET_KEY"
           npm test
-        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets[env.SECRET_KEY] }}
 
       - name: Debug environment variables
         run: |
