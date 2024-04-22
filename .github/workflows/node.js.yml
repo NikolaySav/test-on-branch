@@ -19,16 +19,23 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
+
+      - name: Set uppercase branch name
+        id: set_upper_branch
+        run: echo "UPPER_BRANCH_NAME=$(echo '${{ github.ref_name }}' | tr '[:lower:]' '[:upper:]')" >> $GITHUB_ENV
+
       - name: Print Environment Secrets
         if: github.ref != 'refs/heads/master'
         run: |
-          echo "Database URL Pooled: ${{ secrets[format('{0}_DATABASE_URL', github.head_ref | upper)] }}"
-          echo "Database URL Unpooled: ${{ secrets[format('{0}_DATABASE_URL_UNPOOLED', github.head_ref | upper)] }}"
+          echo "Database URL Pooled: ${{ secrets[format('{0}_DATABASE_URL', env.UPPER_BRANCH_NAME)] }}"
+          echo "Database URL Unpooled: ${{ secrets[format('{0}_DATABASE_URL_UNPOOLED', env.UPPER_BRANCH_NAME)] }}"
