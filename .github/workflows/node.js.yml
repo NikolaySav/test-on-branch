@@ -49,7 +49,7 @@ jobs:
       - name: Run tests
         run: |
           SECRET_KEY="${{ env.BRANCH_NAME }}_DATABASE_URL"
-          DATABASE_URL=${{ secrets[env[SECRET_KEY]] }}
+          DATABASE_URL=$(echo ${{ secrets[env[SECRET_KEY]] }})
           export DATABASE_URL
           npm test
         shell: bash
