@@ -14,12 +14,9 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [ 20.x ]  # Updated Node version to 20.x
+        node-version: [ 20.x ]
 
     steps:
-      - name: Check Node.js version
-        run: node -v
-
       - uses: actions/checkout@v3
 
       - name: Setup Node.js ${{ matrix.node-version }}
@@ -32,12 +29,20 @@ jobs:
       - run: npm run build --if-present
       # - run: npm test
 
-      - name: Debug and Print Environment Secrets
-        if: github.ref != 'refs/heads/main'
+      - name: Compute and Print Secret Keys
         run: |
           BRANCH_NAME_UPPER=$(echo '${{ github.ref_name }}' | tr '[:lower:]' '[:upper:]')
-          echo "Computed Key for Pooled URL: ${BRANCH_NAME_UPPER}_DATABASE_URL"
-          echo "Computed Key for Unpooled URL: ${BRANCH_NAME_UPPER}_DATABASE_URL_UNPOOLED"
-          echo "Database URL Pooled: ${{ secrets[format('{0}_DATABASE_URL', BRANCH_NAME_UPPER)] }}"
-          echo "Database URL Unpooled: ${{ secrets[format('{0}_DATABASE_URL_UNPOOLED', BRANCH_NAME_UPPER)] }}"
+          DATABASE_URL_KEY="${BRANCH_NAME_UPPER}_DATABASE_URL"
+          DATABASE_URL_UNPOOLED_KEY="${BRANCH_NAME_UPPER}_DATABASE_URL_UNPOOLED"
+          echo "Computed Key for Pooled URL: $DATABASE_URL_KEY"
+          echo "Computed Key for Unpooled URL: $DATABASE_URL_UNPOOLED_KEY"
+        shell: bash
+
+      - name: Print Secrets for Debug
+        if: github.ref != 'refs/heads/main'
+        env:
+          BRANCH_NAME_UPPER: ${{ github.ref_name }}
+        run: |
+          echo "Placeholder for Database URL Pooled: ${{ secrets[format('{0}_DATABASE_URL', github.ref_name | upper)] }}"
+          echo "Placeholder for Database URL Unpooled: ${{ secrets[format('{0}_DATABASE_URL_UNPOOLED', github.ref_name | upper)] }}"
         shell: bash
