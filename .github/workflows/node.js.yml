@@ -9,14 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     environment: NEON_PREVIEW_ENV
 
-    # Prepare the environment variable with dynamic secret
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Extract branch name
         id: extract_branch
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr '[:lower:]' '[:upper:]' | tr -d '-')" >> $GITHUB_ENV
+        run: |
+          echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr '[:lower:]' '[:upper:]' | tr -d '-')" >> $GITHUB_ENV
+          echo "Normalized Branch Name: $BRANCH_NAME"
+
+      - name: Debug secret key
+        run: echo "Secret Key for DB URL: ${{ format('{0}_DATABASE_URL', env.BRANCH_NAME) }}"
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -38,6 +42,11 @@ jobs:
         run: npm test
         env:
           DATABASE_URL: ${{ secrets[format('{0}_DATABASE_URL', env.BRANCH_NAME)] }}
+
+      - name: Debug environment variables
+        run: |
+          echo "Using Node Version: ${{ matrix.node-version }}"
+          echo "DATABASE_URL: $DATABASE_URL"  # Will be masked if it's a secret
 
     strategy:
       matrix:
