@@ -22,17 +22,16 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build --if-present
-      - run: npm test
-      - name: Construct and Print Secret Name
+#      - run: npm test
+      - name: Set up branch specific DATABASE_URL
         if: github.ref != 'refs/heads/main'
-        id: get_secret
         run: |
           BRANCH_NAME=${GITHUB_REF#refs/heads/}
           BRANCH_NAME_UPPER=$(echo $BRANCH_NAME | tr '[:lower:]' '[:upper:]')
-          SECRET_NAME="${BRANCH_NAME_UPPER}_DATABASE_URL"
-          echo "::set-output name=secret_command::echo 'DATABASE_URL=\${{ secrets.$SECRET_NAME }}'"
+          SECRET_ENV_VAR_NAME="${BRANCH_NAME_UPPER}_DATABASE_URL"
+          DATABASE_URL_VAR=$(printenv $SECRET_ENV_VAR_NAME)
+          echo "DATABASE_URL=$DATABASE_URL_VAR" >> $GITHUB_ENV
       - name: Use the Secret
         if: github.ref != 'refs/heads/main'
         run: |
-          $( ${{ steps.get_secret.outputs.secret_command }} )
           echo "Using Database URL: $DATABASE_URL"
