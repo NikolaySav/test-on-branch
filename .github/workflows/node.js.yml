@@ -47,7 +47,9 @@ jobs:
           DATABASE_URL: ${{ secrets[env.BRANCH_NAME_DATABASE_URL] }}
 
       - name: Run tests
-        run: npm test
+        run: |
+          echo "DATABASE_URL: $DATABASE_URL"
+          npm test
         env:
           DATABASE_URL: ${{ secrets[env.BRANCH_NAME_DATABASE_URL] }}
 
