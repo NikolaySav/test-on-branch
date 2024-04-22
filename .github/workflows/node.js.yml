@@ -32,15 +32,12 @@ jobs:
       - run: npm run build --if-present
       # - run: npm test
 
-      - name: Set uppercase branch name
-        id: set_upper_branch
-        run: |
-          echo "BRANCH_NAME=$(echo '${{ github.ref_name }}' | tr '[:lower:]' '[:upper:]')" >> $GITHUB_ENV
-          echo "UPPER_BRANCH_NAME=${BRANCH_NAME}_DATABASE_URL" >> $GITHUB_ENV
-          echo "UPPER_BRANCH_NAME_UNPOOLED=${BRANCH_NAME}_DATABASE_URL_UNPOOLED" >> $GITHUB_ENV
-
-      - name: Print Environment Secrets
+      - name: Debug and Print Environment Secrets
         if: github.ref != 'refs/heads/main'
         run: |
-          echo "Database URL Pooled: ${{ secrets[env.UPPER_BRANCH_NAME] }}"
-          echo "Database URL Unpooled: ${{ secrets[env.UPPER_BRANCH_NAME_UNPOOLED] }}"
+          BRANCH_NAME_UPPER=$(echo '${{ github.ref_name }}' | tr '[:lower:]' '[:upper:]')
+          echo "Computed Key for Pooled URL: ${BRANCH_NAME_UPPER}_DATABASE_URL"
+          echo "Computed Key for Unpooled URL: ${BRANCH_NAME_UPPER}_DATABASE_URL_UNPOOLED"
+          echo "Database URL Pooled: ${{ secrets[format('{0}_DATABASE_URL', BRANCH_NAME_UPPER)] }}"
+          echo "Database URL Unpooled: ${{ secrets[format('{0}_DATABASE_URL_UNPOOLED', BRANCH_NAME_UPPER)] }}"
+        shell: bash
