@@ -31,18 +31,19 @@ jobs:
 
       - name: Compute and Print Secret Keys
         run: |
-          BRANCH_NAME_UPPER=$(echo '${{ github.ref_name }}' | tr '[:lower:]' '[:upper:]')
-          DATABASE_URL_KEY="${BRANCH_NAME_UPPER}_DATABASE_URL"
-          DATABASE_URL_UNPOOLED_KEY="${BRANCH_NAME_UPPER}_DATABASE_URL_UNPOOLED"
+          BRANCH_NAME="${{ github.ref_name }}"
+          DATABASE_URL_KEY="${BRANCH_NAME}_DATABASE_URL"
+          DATABASE_URL_UNPOOLED_KEY="${BRANCH_NAME}_DATABASE_URL_UNPOOLED"
           echo "Computed Key for Pooled URL: $DATABASE_URL_KEY"
           echo "Computed Key for Unpooled URL: $DATABASE_URL_UNPOOLED_KEY"
         shell: bash
 
       - name: Print Secrets for Debug
         if: github.ref != 'refs/heads/main'
-        env:
-          BRANCH_NAME_UPPER: ${{ github.ref_name }}
         run: |
-          echo "Placeholder for Database URL Pooled: ${{ secrets[format('{0}_DATABASE_URL', github.ref_name | upper)] }}"
-          echo "Placeholder for Database URL Unpooled: ${{ secrets[format('{0}_DATABASE_URL_UNPOOLED', github.ref_name | upper)] }}"
+          echo "Placeholder for Database URL Pooled: ${{ secrets.DATABASE_URL_KEY }}"
+          echo "Placeholder for Database URL Unpooled: ${{ secrets.DATABASE_URL_UNPOOLED_KEY }}"
         shell: bash
+        env:
+          DATABASE_URL_KEY: ${{ format('{0}_DATABASE_URL', github.ref_name) }}
+          DATABASE_URL_UNPOOLED_KEY: ${{ format('{0}_DATABASE_URL_UNPOOLED', github.ref_name) }}
