@@ -24,10 +24,10 @@ jobs:
 #      - run: npm run build --if-present
 #      - run: npm test
       - name: Set up branch specific DATABASE_URL
-        if: github.ref != 'refs/heads/main'
+        if: github.head_ref != 'main'
         run: |
-          echo "Debug: Full GITHUB_REF value: $GITHUB_REF"
-          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          echo "Debug: GITHUB_HEAD_REF value: $GITHUB_HEAD_REF"
+          BRANCH_NAME="$GITHUB_HEAD_REF"
           echo "Debug: Extracted BRANCH_NAME: $BRANCH_NAME"
           BRANCH_NAME_UPPER=$(echo "$BRANCH_NAME" | tr '[:lower:]' '[:upper:]')
           echo "Debug: BRANCH_NAME_UPPER: $BRANCH_NAME_UPPER"
@@ -42,3 +42,5 @@ jobs:
             echo "Using Database URL: $DATABASE_URL_VAR"
           fi
         shell: bash
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
