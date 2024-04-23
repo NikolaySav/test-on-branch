@@ -22,7 +22,7 @@ jobs:
         run: |
           if [ "${{ github.ref_name }}" == "main" ]; then
             echo "Using production environment settings"
-            ENVIRONMENT="NEON_PREVIEW_PROD"
+            ENVIRONMENT="NEON_PROD_ENV"
           else
             echo "Using development environment settings"
             ENVIRONMENT="NEON_PREVIEW_ENV"
@@ -39,7 +39,7 @@ jobs:
 
       - name: Debug secret key
         run: |
-          if [ "$ENVIRONMENT" == "NEON_PREVIEW_PROD" ]; then
+          if [ "$ENVIRONMENT" == "NEON_PROD_ENV" ]; then
             SECRET_KEY="DATABASE_URL"
           else
             SECRET_KEY="${{ env.BRANCH_NAME }}_DATABASE_URL"
