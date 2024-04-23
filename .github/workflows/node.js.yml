@@ -27,7 +27,6 @@ jobs:
           echo "Normalized Branch Name: $BRANCH_NAME"
         shell: bash
 
-
       - name: Debug secret key
         run: |
           if [ "${{ github.ref_name }}" = "main" ]; then
@@ -38,6 +37,9 @@ jobs:
           echo "Secret Key for DB URL: $SECRET_KEY"
           echo "SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
         shell: bash
+
+      - name: Print resolved environment
+        run: echo "The resolved environment is ${{ github.job.environment }}"
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
