@@ -56,8 +56,3 @@ jobs:
           npm test
         env:
           DATABASE_URL: ${{ secrets[env.SECRET_KEY] }}
-
-      - name: Debug environment variables
-        run: |
-          echo "Using Node Version: ${{ matrix.node-version }}"
-          echo "DATABASE_URL: $DATABASE_URL"  # Will be masked if it's a secret
