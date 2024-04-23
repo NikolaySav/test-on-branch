@@ -1,19 +1,15 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
 name: Node.js CI
 
 on:
-  pull_request:
-    branches: [ "**" ]
+  push:
+    branches:
+      - '*'  # Trigger on every branch
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    environment: ${{ github.head_ref }}
-    env:
-      DATABASE_URL: ${{ vars.DATABASE_URL }}
+    # Conditional environment setting
+    environment: ${{ (github.ref_name == 'main' && 'NEON_PREVIEW_PROD') || 'NEON_PREVIEW_ENV' }}
 
     strategy:
       matrix:
@@ -21,12 +17,47 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Extract and echo branch name
+        run: |
+          BRANCH_NAME=$(echo "${GITHUB_REF#refs/heads/}" | tr '[:lower:]' '[:upper:]' | tr -d '-')
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "Normalized Branch Name: $BRANCH_NAME"
+        shell: bash
+
+
+      - name: Debug secret key
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            SECRET_KEY="DATABASE_URL"
+          else
+            SECRET_KEY="${{ env.BRANCH_NAME }}_DATABASE_URL"
+          fi
+          echo "Secret Key for DB URL: $SECRET_KEY"
+          echo "SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          DATABASE_URL: ${{ secrets[env.SECRET_KEY] }}
+
+      - name: Build
+        run: |
+          npm run build --if-present
+        env:
+          DATABASE_URL: ${{ secrets[env.SECRET_KEY] }}
+
+      - name: Run tests
+        run: |
+          npm test
+        env:
+          DATABASE_URL: ${{ secrets[env.SECRET_KEY] }}
