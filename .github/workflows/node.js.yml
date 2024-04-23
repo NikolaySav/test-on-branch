@@ -2,12 +2,14 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "actions" ]  # Add more branches as needed
+    branches:
+      - '*'  # Trigger on every branch
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: NEON_PREVIEW_ENV
+    # Conditional environment setting
+    environment: ${{ (github.ref_name == 'main' && 'NEON_PREVIEW_PROD') || 'NEON_PREVIEW_ENV' }}
 
     strategy:
       matrix:
@@ -28,7 +30,11 @@ jobs:
 
       - name: Debug secret key
         run: |
-          SECRET_KEY="${{ env.BRANCH_NAME }}_DATABASE_URL"
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            SECRET_KEY="DATABASE_URL"
+          else
+            SECRET_KEY="${{ env.BRANCH_NAME }}_DATABASE_URL"
+          fi
           echo "Secret Key for DB URL: $SECRET_KEY"
           echo "SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
         shell: bash
