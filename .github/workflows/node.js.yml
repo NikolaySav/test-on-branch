@@ -8,8 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Conditional environment setting
-    environment: ${{ (github.ref_name == 'main' && 'NEON_PREVIEW_PROD') || 'NEON_PREVIEW_ENV' }}
 
     strategy:
       matrix:
@@ -20,6 +18,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set environment conditionally and print
+        run: |
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            echo "Using production environment settings"
+            ENVIRONMENT="NEON_PREVIEW_PROD"
+          else
+            echo "Using development environment settings"
+            ENVIRONMENT="NEON_PREVIEW_ENV"
+          fi
+          echo "ENVIRONMENT=$ENVIRONMENT" >> $GITHUB_ENV
+          echo "The resolved environment is: $ENVIRONMENT"
+
       - name: Extract and echo branch name
         run: |
           BRANCH_NAME=$(echo "${GITHUB_REF#refs/heads/}" | tr '[:lower:]' '[:upper:]' | tr -d '-')
@@ -29,7 +39,7 @@ jobs:
 
       - name: Debug secret key
         run: |
-          if [ "${{ github.ref_name }}" = "main" ]; then
+          if [ "$ENVIRONMENT" == "NEON_PREVIEW_PROD" ]; then
             SECRET_KEY="DATABASE_URL"
           else
             SECRET_KEY="${{ env.BRANCH_NAME }}_DATABASE_URL"
@@ -37,9 +47,6 @@ jobs:
           echo "Secret Key for DB URL: $SECRET_KEY"
           echo "SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
         shell: bash
-
-      - name: Print resolved environment
-        run: echo "The resolved environment is ${{ github.job.environment }}"
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
