@@ -58,8 +58,6 @@ jobs:
 
       - name: Run tests
         run: |
-          echo "SECRET_KEY: $SECRET_KEY"
-          echo "${DATABASE_URL}"
           npm test
         env:
           DATABASE_URL: ${{ secrets[env.SECRET_KEY] }}
